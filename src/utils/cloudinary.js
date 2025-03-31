@@ -1,8 +1,6 @@
 import {v2 as cloudinary} from 'cloudinary';
-import {CloudinaryStorage} from 'multer-storage-cloudinary';
 import fs from 'fs';
-import multer from 'multer';
-import path from 'path';
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
