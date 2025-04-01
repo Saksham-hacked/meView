@@ -85,8 +85,10 @@ const loginUser = asyncHandler(async (req,res)=>{
     //send cookies
     //send response
 
-
+     
+    console.log("body",req.body);
     const {email,password} = req.body;
+    console.log("email",email);
     if(!email ){
         throw new ApiErrors(400,"Email is required");
     }
@@ -196,11 +198,21 @@ const refreshAccessToken = asyncHandler(async (req,res)=>{
     
 });
 
+const getCurrentUSer = asyncHandler(async (req,res)=>{
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "User fetched successfully",
+            req.user
+        )
+    );
+})
+
 
 
 
 
 
 export {
-    registerUser,loginUser,logoutUser,refreshAccessToken
+    registerUser,loginUser,logoutUser,refreshAccessToken,getCurrentUSer
 };
