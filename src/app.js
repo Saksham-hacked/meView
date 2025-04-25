@@ -15,8 +15,10 @@ app.use(cookieParser());
 
 
 import userRouter from './routes/user.routes.js';
+import reviewRouter from './routes/review.routes.js';
 
 app.use("/user",userRouter);
+app.use("/review", reviewRouter);
 
 
 export default app;

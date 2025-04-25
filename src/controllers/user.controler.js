@@ -14,6 +14,23 @@ const generateAccesstokenAndRefreshtoken = async (userId)=>{
     return {accessToken,refreshToken};
 }
 
+const getUserByUserName = asyncHandler(async (req,res)=>{
+    const {username} = req.params;
+    const user = await User.findOne({username},"-password -refreshToken");
+    if(!user){
+        throw new ApiErrors(400,"User not found");
+    }
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "User fetched successfully",
+            user
+        )
+    );
+})
+
+
+
 
 const registerUser = asyncHandler(async (req, res) => {
     //getting user details
@@ -39,6 +56,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const existeduser = await User.findOne({$or:[{username},{email}]});
+    console.log("existeduser",existeduser);
     if(existeduser){
         throw new ApiErrors(400,"Username or email already exists");
     }
@@ -108,7 +126,8 @@ const loginUser = asyncHandler(async (req,res)=>{
 
    const options={
     httpOnly:true,
-    Secure:true,
+    secure:true,
+    sameSite:"none",
    }//through these options no one can modify cookie through frontend
 
    return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options).json(
@@ -144,6 +163,7 @@ const logoutUser = asyncHandler(async (req,res)=>{
     const options={
      httpOnly:true,
      secure:true,
+     sameSite:"none"
     
     }//through these options no one can modify cookie through frontend
 
@@ -208,11 +228,89 @@ const getCurrentUSer = asyncHandler(async (req,res)=>{
     );
 })
 
+const userSearch = asyncHandler(async (req,res)=>{
+    console.log("hello from user search");
+    console.log("req.query",req.query);
+    const {query} = req.query;
+    console.log("query",query);
+    const users = await User.find({username:{$regex:query,$options:"i"}}).select("-password -refreshToken");
+    if(!users){
+        throw new ApiErrors(400,"Error fetching users");
+    }
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            "Users fetched successfully",
+            users
+        )
+    );
+})
+
+
+const followUser = asyncHandler(async (req, res) => {
+    const currentUserId = req.user._id; // Logged-in user
+    const { targetUserId } = req.body;  // User to follow
+  
+    if (currentUserId.toString() === targetUserId) {
+      throw new ApiErrors(400, "You cannot follow yourself");
+    }
+  
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+  
+    if (!targetUser) {
+      throw new ApiErrors(404, "User to follow not found");
+    }
+  
+    // Prevent duplicate follows
+    if (currentUser.following.includes(targetUserId)) {
+      throw new ApiErrors(400, "You are already following this user");
+    }
+  
+    currentUser.following.push(targetUserId);
+    targetUser.followers.push(currentUserId);
+  
+    await currentUser.save();
+    await targetUser.save();
+  
+    return res.status(200).json(
+      new ApiResponse(200, "Followed user successfully")
+    );
+  });
+
+  // Unfollow a user
+const unfollowUser = asyncHandler(async (req, res) => {
+    const currentUserId = req.user._id;
+    const { targetUserId } = req.body;
+  
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+  
+    if (!targetUser) {
+      throw new ApiErrors(404, "User to unfollow not found");
+    }
+  
+    currentUser.following = currentUser.following.filter(
+      id => id.toString() !== targetUserId
+    );
+    targetUser.followers = targetUser.followers.filter(
+      id => id.toString() !== currentUserId.toString()
+    );
+  
+    await currentUser.save();
+    await targetUser.save();
+  
+    return res.status(200).json(
+      new ApiResponse(200, "Unfollowed user successfully")
+    );
+  });
+  
+
 
 
 
 
 
 export {
-    registerUser,loginUser,logoutUser,refreshAccessToken,getCurrentUSer
+    registerUser,loginUser,logoutUser,refreshAccessToken,getCurrentUSer,userSearch,followUser,unfollowUser,getUserByUserName
 };

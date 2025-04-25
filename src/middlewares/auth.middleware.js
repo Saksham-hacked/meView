@@ -5,6 +5,7 @@ import  User  from "../model/user.model.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
    try {
+      // console.log("request",req)
     const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
     if(!token){
        throw new ApiErrors(401,"no token in cookie")

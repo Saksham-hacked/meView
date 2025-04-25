@@ -8,7 +8,16 @@ const reviewSchema = new mongoose.Schema(
       required: true,
     },
     movieId: {
-      type: String, // TMDb movie ID (not stored in DB)
+      type: String, 
+      required: true,
+    },
+    movieTitle: {
+      type: String,
+      required: true,
+      
+    },
+    moviePoster: {
+      type: String,
       required: true,
     },
     rating: {
@@ -52,7 +61,7 @@ const reviewSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true } // Auto adds createdAt & updatedAt
+  { timestamps: true } 
 );
 
 const Review = mongoose.model("Review", reviewSchema);
